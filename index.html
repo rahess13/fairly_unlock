@@ -16,7 +16,7 @@
         filters: [{ namePrefix: 'Particle' }]
       })
       .then(device => device.gatt.connect())
-      .then(server => server.getPrimaryService('service_uuid'))  // Ersetze 'service_uuid' durch die Service-ID des Particle-Geräts
+      .then(server => server.getPrimaryService('72DAA6C3-29C2-6283-0C4A-2818E4D37E75'))
       .then(service => service.getCharacteristic('serial'))
       .then(characteristic => {
         let encoder = new TextEncoder('utf-8');
