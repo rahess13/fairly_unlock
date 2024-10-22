@@ -1,30 +1,70 @@
-
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>E-Bike Unlock</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-Bike Remote Entsperren/Sperren</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 5px; /* Abstand zwischen den Buttons */
+        }
+    </style>
 </head>
 <body>
-  <h1>E-Bike Entsperren</h1>
-  <button id="unlockBtn">E-Bike entsperren</button>
+    <h1>E-Bike Remote Entsperren/Sperren</h1>
+    <button id="unlockBtn">E-Bike Entsperren</button>
+    <button id="lockBtn">E-Bike Sperren</button>
+    <p id="message"></p>
 
-  <script>
-    document.getElementById('unlockBtn').addEventListener('click', function() {
-      navigator.bluetooth.requestDevice({
-        filters: [{ namePrefix: 'Particle' }]
-      })
-      .then(device => device.gatt.connect())
-      .then(server => server.getPrimaryService('72DAA6C3-29C2-6283-0C4A-2818E4D37E75'))
-      .then(service => service.getCharacteristic('serial'))
-      .then(characteristic => {
-        let encoder = new TextEncoder('utf-8');
-        return characteristic.writeValue(encoder.encode("BONDAB949ULYJ5M"));
-      })
-      .then(() => console.log("Seriennummer gesendet, E-Bike sollte entsperrt werden."))
-      .catch(error => console.error(error));
-    });
-  </script>
+    <script>
+        const particle = new Particle();
+        const token = '1c3e413dcf1f87ecf0644cad0ac223e766b55c64'; // Dein Access Token hier
+        const deviceId = 'e00fce6801e83ee10e6839c4'; // Deine Device ID hier
+
+        document.getElementById('unlockBtn').addEventListener('click', function() {
+            particle.callFunction({
+                deviceId: deviceId,
+                name: 'unlockBike',
+                argument: 'BONDAB949ULYJ5M', // Der Entsperrungscode
+                auth: token
+            }).then(
+                function(data) {
+                    document.getElementById('message').innerText = 'E-Bike erfolgreich entsperrt: ' + JSON.stringify(data);
+                    console.log('E-Bike erfolgreich entsperrt:', data);
+                },
+                function(err) {
+                    document.getElementById('message').innerText = 'Fehler beim Entsperren: ' + err;
+                    console.error('Fehler beim Entsperren:', err);
+                }
+            );
+        });
+
+        document.getElementById('lockBtn').addEventListener('click', function() {
+            particle.callFunction({
+                deviceId: deviceId,
+                name: 'lockBike', // Cloud-Funktion zum Sperren
+                argument: 'BONDAB949ULYJ5M', // Der Sperrcode (falls erforderlich)
+                auth: token
+            }).then(
+                function(data) {
+                    document.getElementById('message').innerText = 'E-Bike erfolgreich gesperrt: ' + JSON.stringify(data);
+                    console.log('E-Bike erfolgreich gesperrt:', data);
+                },
+                function(err) {
+                    document.getElementById('message').innerText = 'Fehler beim Sperren: ' + err;
+                    console.error('Fehler beim Sperren:', err);
+                }
+            );
+        });
+    </script>
+    <script src="https://unpkg.com/particle-api-js/dist/particle-api-js.umd.js"></script>
 </body>
 </html>
