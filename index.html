@@ -1,0 +1,30 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>E-Bike Unlock</title>
+</head>
+<body>
+  <h1>E-Bike Entsperren</h1>
+  <button id="unlockBtn">E-Bike entsperren</button>
+
+  <script>
+    document.getElementById('unlockBtn').addEventListener('click', function() {
+      navigator.bluetooth.requestDevice({
+        filters: [{ namePrefix: 'Particle' }]
+      })
+      .then(device => device.gatt.connect())
+      .then(server => server.getPrimaryService('service_uuid'))  // Ersetze 'service_uuid' durch die Service-ID des Particle-Geräts
+      .then(service => service.getCharacteristic('serial'))
+      .then(characteristic => {
+        let encoder = new TextEncoder('utf-8');
+        return characteristic.writeValue(encoder.encode("BONDAB949ULYJ5M"));
+      })
+      .then(() => console.log("Seriennummer gesendet, E-Bike sollte entsperrt werden."))
+      .catch(error => console.error(error));
+    });
+  </script>
+</body>
+</html>
